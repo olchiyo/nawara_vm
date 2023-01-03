@@ -3,16 +3,18 @@
 
 CentOS9_image_url: "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20221129.1.x86_64.qcow2"
 CentOS9_image_name: "CentOS-Stream-GenericCloud-9-20221129.1.x86_64.qcow2"
-CentOS9_image_checksum: 81d948beacd87d1c8b9ad259c16c787229b5f6024d43b440cc424a98addb5a3b
+CentOS9_image_checksum: "sha256:81d948beacd87d1c8b9ad259c16c787229b5f6024d43b440cc424a98addb5a3b"
 #CentOS8_image_name:
 #CentOS8_image_checksum:
 #Ubuntu2004_image_name:
 #RHEL8_image_name:
 #RockyLinux8_image_name:
 
-vm_name: default-vm01
+vm_name: default-vm{{ 100 | random }}
 vm_ram_mb: 4096
 vm_vcpus: 2
-QCOW2_image_dir: /libvirt
-#first_mac_address:
-#bridge_name:
+QCOW2_image_dir: /libvirt02/libvirt/images
+cloud_init_dir: "/root/cloud-init-files"
+network_br_name: br-v210
+recreate_QCOW2_file: true
+os_disk_size: 100G

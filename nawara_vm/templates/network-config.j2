@@ -1,0 +1,10 @@
+version: 2
+ethernets:
+  eno0:
+    match:
+      mac_address: "{{ mac_address01 | ansible.utils.hwaddr }}"
+    addresses:
+      - "{{  ip_address01 | ansible.utils.ipaddr('host/prefix') }}"
+    gateway4: "{{ gateway | ansible.utils.ipaddr('address') }}"
+    nameservers:
+      addresses: [1.1.1.1, 1.0.0.1]
