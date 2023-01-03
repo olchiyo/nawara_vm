@@ -159,25 +159,25 @@
     when: distro == "CentOS8" and recreate_QCOW2_file
   
   - name: Create base QCOW2 file (RHEL8)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "RHEL8" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "RHEL8" and recreate_QCOW2_file
 
   - name: Create base QCOW2 file (RHEL9)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "RHEL9" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "RHEL9" and recreate_QCOW2_file
 
   - name: Create base QCOW2 file (Ubuntu20.04)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "Ubuntu2004" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "Ubuntu2004" and recreate_QCOW2_file
 
   - name: Resize base QCOW2 file
     ansible.builtin.command: "qemu-img resize {{ QCOW2_image_dir }}/{{ vm_name }}.qcow2 {{ os_disk_size }}"
