@@ -15,6 +15,7 @@ users:
     passwd: $6$Mb7xPh7j1yEVeq1s$44CuWzluiRzSksun/fNrXimBbkMkvNGs/tpc2TBUE0i/5mg4FEq00m/ztSvWNsVwmRl0oxh8iRMuFUE8rV8LN.
     lock_passwd: false
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
 # selinux-user: staff_u
     groups: users,wheel
     ssh_pwauth: True
@@ -29,6 +30,7 @@ users:
     ssh_pwauth: True
     ssh_authorized_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH/DFuBXdf2S4MR3HGszHXjBe38ewGFD23t6RdpWm7Vd jar1333@smsolutions.io
+    shell: /bin/bash
 write_files:
   - path: /etc/locale.conf
     content: |
