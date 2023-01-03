@@ -1,0 +1,86 @@
+#cloud-config
+user: ubuntu
+password: ubuntu
+chpasswd: {expire: False}
+ssh_pwauth: True
+#rh_subscription:
+#  username: sample@redhat.com
+#  password: 'mypassword'
+#  auto-attach: True
+#  service-level: self-support
+users:
+  - default
+  - name: prudentcircle
+    gecos: Daewon's admin account
+    passwd: $6$Mb7xPh7j1yEVeq1s$44CuWzluiRzSksun/fNrXimBbkMkvNGs/tpc2TBUE0i/5mg4FEq00m/ztSvWNsVwmRl0oxh8iRMuFUE8rV8LN.
+    lock_passwd: false
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+# selinux-user: staff_u
+    groups: users,wheel
+    ssh_pwauth: True
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAIyaLTON0O4BFdCPdVJC0h6Q/4saDFMgHTAwGYnrYxc prudentcircle@smsolutions.co.kr
+  - name: tokdosirak
+    gecos: JAR1333 Common Admin account
+    passwd: $6$0dfKpqBX7nREYo8H$DueJU309qf4cCfVELf0IkV6ZOVKoIIcKBrtjgPOEGa5ELwcli6l2CUpMXSxrhbksh5LcBH6I5sIt2dA1Eyj02/
+    lock_passwd: false
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    groups: users,wheel
+    ssh_pwauth: True
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH/DFuBXdf2S4MR3HGszHXjBe38ewGFD23t6RdpWm7Vd jar1333@smsolutions.io
+write_files:
+  - path: /etc/locale.conf
+    content: |
+      LANG=en_US.UTF-8
+      LC_CTYPE=en_US.UTF-8
+      LC_NUMERIC=en_US.UTF-8
+      LC_TIME=en_US.UTF-8
+      LC_COLLATE=en_US.UTF-8
+      LC_MONETARY=en_US.UTF-8
+      LC_MESSAGES=en_US.UTF-8
+      LC_PAPER=en_US.UTF-8
+      LC_NAME=en_US.UTF-8
+      LC_ADDRESS=en_US.UTF-8
+      LC_TELEPHONE=en_US.UTF-8
+      LC_MEASUREMENT=en_US.UTF-8
+      LC_IDENTIFICATION=en_US.UTF-8
+      LC_ALL=en_US.UTF-8
+  - path: /home/prudentcircle/.vimrc
+    content: |
+      syntax enable
+      set encoding=utf8
+      set ffs=unix,dos,mac
+      set expandtab
+      set smarttab
+      set shiftwidth=4
+      set tabstop=4
+      set ai "Auto indent
+      set si "Smart indent
+      set wrap "Wrap lines
+      autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+      autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
+      autocmd FileType sh setlocal ts=4 sts=4 sw=4 expandtab
+  - path: /home/tokdosirak/.vimrc
+    content: |
+      syntax enable
+      set encoding=utf8
+      set ffs=unix,dos,mac
+      set expandtab
+      set smarttab
+      set shiftwidth=4
+      set tabstop=4
+      set ai "Auto indent
+      set si "Smart indent
+      set wrap "Wrap lines
+      autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+      autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
+      autocmd FileType sh setlocal ts=4 sts=4 sw=4 expandtab
+  - path: /etc/udev/rules.d/30-net_persistent_names.rules
+    content: |
+      SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ mac_address01 }}", NAME="eno0"
+runcmd:
+  - sed -i '/^#Port 22/a Port 14217' /etc/ssh/sshd_config
+  - chown -R prudentcircle:prudentcircle /home/prudentcircle/
+  - chown -R tokdosirak:tokdosirak /home/tokdosirak/
+  - semanage port -a -t ssh_port_t -p tcp 14217
