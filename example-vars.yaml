@@ -1,0 +1,72 @@
+---
+## target_host: VM을 생성할 물리 호스트의 이름을 기입한다. 
+## Ansible Inventory 내에 이미 선언이 되어있는 호스트여야 한다.
+## 한 개의 서버만 지정한다.
+## ex) target_host: libvirt02
+target_host: libvirt02
+
+## QCOW2_image_dir: QCOW2 이미지가 생성되고 저장되는 디렉토리를 명시한다. 
+## 인터넷에서 다운로드 되는 원본 QCOW2 이미지 파일도 이 디렉토리에 저장이 된다.
+## 해당 값은 임의로 정하는게 아니라, 김대원 선임이 미리 정해 놨으니 따로 문의한다.
+## ex) target_host: /libvirt02/libvirt/images
+
+QCOW2_image_dir: /libvirt02/libvirt/images
+
+## cloud_init_dir: VM의 구성에 필요한 cloud-init 및 관련 파일들을 저장하는 디렉토리를 명시한다.
+## JAR1333 환경에서는 root 홈 디렉토리 밑에 생성하는것을 권장하고 있기에, 아래 예시는 /root/cloud-init-files 이다.
+## ex) cloud_init_dir: "/root/cloud-init-files"
+
+cloud_init_dir: "/root/cloud-init-files"
+
+## vm_name: VM 명을 명시한다. 이미 사용중인 이름은 Ansible의 오동작을 야기하며, 기존에 동작하는 VM에 영항을 끼칠 수 있다.
+## JAR1333 환경에서는 목적-이름-OS 순서로 작성한다. CamelCase와 dash를 섞어서 사용한다.
+## 예시 1) K8SCTRL01-daewon-ubuntu2004
+## 예시 2) ZabbixTest-daewon-ubuntu2004
+## ex) vm_name: testAnsible-daewon-centos9
+
+vm_name: test-daewon01-centos9
+
+## ip_address01: 가상머신에 할당한 IP 주소를 명시한다. 현재는 한 개의 NIC만 지원하지만 향후에는 2개 이상의 NIC도 지원할 예정이다.
+## JAR1333 환경에서는 각자에게 할당된 네트워크가 있으니 해당 네트워크를 사용한다.
+## 반드시 IP Address / Prefix 형태로 적어주어야 한다. 그러지 않을경우 스크립트가 제대로 동작하지 않는다.
+## 좋은 예시 1) 192.168.212.23/24
+## 나쁜 예시 1) 192.168.211.99
+## ex) ip_address01: 192.168.210.22/24
+
+ip_address01: 192.168.210.22/24
+
+## Gateway: Default Gateway로 사용할 하나의 IP 주소를 명시한다.
+## IP 값만 주어야 하며, Prefix는 생략한다.
+## ex) gateway: 192.168.210.1
+
+gateway: 192.168.210.1
+
+## network_br_name: 가상머신이 사용할 Network Bridge 명을 명시한다.
+## JAR1333에는 각 사용자가 사용하기로 한 Network Bridge가 이미 지정이 되어있으니 그것을 사용하도록 하고,
+## 기억이 안난다면 김대원 선임에게 따로 문의 하도록 한다.
+## ex) network_br_name: br-v211
+
+network_br_name: br-v210
+
+## os_disk_size: 가상머신의 OS 영역으로 사용할 디스크의 크기를 정한다.
+## JAR1333 환경에서는 어차피 실습용이니 40G, 50G 수준으로 할당해도 된다.
+## ex) os_disk_size: 50G
+
+os_disk_size: 100G
+
+## vm_ram_mb: 가상머신에게 할당할 메모리 값을 명시한다. 숫자만 적으면 되며, 단위는 MB 이다.
+## JAR1333 환경에서는 대부분의 경우 4GB 면 충분하다.
+## ex) vm_ram_mb: 4096
+
+vm_ram_mb: 4096
+
+## vm_vcpus: 가상머신에게 할당할 CPU 값을 명시한다. 숫자만 적으면 된다.
+## JAR1333 환경에서는 대부분의 경우 2개의 CPU 만으로 충분하다.
+## ex) vm_vcpus: 2
+vm_vcpus: 2
+
+## recreate_QCOW2_file: 만약 VM은 없지만, OS 용도의 QCOW2 파일은 존재하는 경우, 기존것을 삭제하고 새로 생성할지를 정한다.
+## True인 경우, 기존의 QCOW2 파일을 삭제하고 새로 생성한다. OS 초기화 하고 싶으면 무조건 true이다.
+## False인 경우, 기존에 발견된 QCOW2 파일을 삭제하지 않고 재활용 한다. 기존 데이터를 유지하고 싶다면 false로 설정한다.
+## ex) recreate_QCOW2_file: true
+recreate_QCOW2_file: true
