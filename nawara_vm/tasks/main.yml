@@ -67,7 +67,7 @@
     url: "{{ CentOS9_image_url }}"
     dest: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
     checksum: "{{ CentOS9_image_checksum }}"
-  when: not cento9_image['stat']['exists'] and distro == "CentOS9"
+  when: not centos9_image['stat']['exists'] and distro == "CentOS9"
 
 - name: Download a CentOS8 QCOW2 image if not exists
   ansible.builtin.get_url:
