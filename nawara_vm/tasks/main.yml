@@ -1,0 +1,235 @@
+---
+- name: Ensure requirements in place
+  package:
+    name:
+      - libguestfs-tools
+      - python3-libvirt
+    state: present
+  become: yes
+
+- name: Check if CentOS9 QCOW2 image exists
+  ansible.builtin.stat:
+    path: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
+  register: image_exists
+  when: distro == "CentOS9"
+
+- name: Check if CentOS8 QCOW2 image exists
+  ansible.builtin.stat:
+    path: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
+  when: distro == "CentOS8"
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: image_exists
+
+- name: Download a QCOW2 image if not exists
+  ansible.builtin.get_url:
+    url: https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20221129.1.x86_64.qcow2
+    dest: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
+    checksum: "{{ CentOS9_image_checksum }}"
+  when: not image_exists['stat']['exists'] and distro == "CentOS9"
+
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Show Current VM List
+  ansible.builtin.debug:
+    var: existing_vms
+
+- name: Create VM if not exists
+  block:
+  - name: Check cloud-init Directory if not exists
+    ansible.builtin.stat:
+      path: "{{ cloud_init_dir }}/{{ vm_name }}"
+    register: cloud_init_dir_check
+  
+  - name: Show if cloud-init directory not exists
+    ansible.builtin.debug:
+      var: cloud_init_dir_check
+    
+  - name: Create Metadata Directory if not exists
+    ansible.builtin.file:
+      path: "{{ cloud_init_dir }}/{{ vm_name }}"
+      state: directory
+      mode: '0755'
+    when: not cloud_init_dir_check['stat']['exists']
+  
+  - name: Create macaddress 
+    ansible.builtin.shell: "printf '52:54:00:%02x:%02x:%02x\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256))"
+    register: cmd_macaddress
+
+  - name: Display MAC Address
+    ansible.builtin.debug:
+      var: cmd_macaddress
+
+  - name: Turn macaddress into a variable
+    ansible.builtin.set_fact:
+      mac_address01: "{{ cmd_macaddress.stdout | ansible.utils.hwaddr }}"
+
+  - name: Display Mac Address
+    ansible.builtin.debug:
+      var: mac_address01  
+  
+  - name: Render meta-data file
+    ansible.builtin.template:
+      src: meta-data.j2
+      dest: "{{ cloud_init_dir }}/{{ vm_name }}/meta-data"
+
+  - name: Render user-data file (CentOS 9)
+    ansible.builtin.template:
+      src: user-data-centos9.j2
+      dest: "{{ cloud_init_dir }}/{{ vm_name }}/user-data"
+    when: distro == "CentOS9"
+
+  - name: Render network-config file
+    ansible.builtin.template:
+      src: network-config.j2
+      dest: "{{ cloud_init_dir }}/{{ vm_name }}/network-config"
+
+  - name: Create base QCOW2 file (CentOS 9)
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "CentOS9" and recreate_QCOW2_file
+
+  - name: Resize base QCOW2 file
+    ansible.builtin.command: "qemu-img resize {{ QCOW2_image_dir }}/{{ vm_name }}.qcow2 {{ os_disk_size }}"
+    when: recreate_QCOW2_file
+
+  - name: create an cloud-init ISO file
+    ansible.builtin.command:
+      cmd: >
+        genisoimage
+        -output {{ QCOW2_image_dir }}/{{ vm_name }}.iso
+        -volid cidata
+        -joliet
+        -rock
+        {{ cloud_init_dir }}/{{ vm_name }}/user-data
+        {{ cloud_init_dir }}/{{ vm_name }}/meta-data
+        {{ cloud_init_dir }}/{{ vm_name }}/network-config
+
+  - name: Render XML file for the VM
+    ansible.builtin.template:
+      src: vm_xml.j2
+      dest: "{{ cloud_init_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+
+  - name: Define VM
+    community.libvirt.virt:
+      command: define
+      xml: "{{ lookup('template', 'vm_xml.j2') }}"
+      autostart: yes
+
+  when: "vm_name not in existing_vms.list_vms"
+
+- name: Refresh VM List
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Ensure VM is started
+  community.libvirt.virt:
+    name: "{{ vm_name }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 5
+  delay: 10
+  when: "vm_name in existing_vms.list_vms"
+
+
+- name: Wait for cloud-init to finish
+  ansible.builtin.pause:
+    seconds: 90
+
+- name: Ensure VM is shutdown once
+  community.libvirt.virt:
+    name: "{{ vm_name }}"
+    state: destroyed
+  register: vm_destroyed_results
+  until: "vm_destroyed_results is success"
+  retries: 5
+  delay: 15
+  when: "vm_name in existing_vms.list_vms"
+
+- name: Ensure VM is started again
+  community.libvirt.virt:
+    name: "{{ vm_name }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 15
+  delay: 10
+  when: "vm_name in existing_vms.list_vms"
+
+#   - name: Get VMs list
+#   community.libvirt.virt:
+#     command: list_vms
+#   register: existing_vms
+#   changed_when: no
+
+# - name: Set facts for CentOS 9 image
+#   set_fact:
+#      image_name: "{{ CentOS9_image_name }}"
+#    when: distro == 'CentOS9'
+
+
+
+# - name: Check if CentOS 9 QCOW2 image exists
+#   ansible.builtin.stat:
+#     path: /libvirt02/libvirt/images/CentOS-Stream-GenericCloud-9-20221129.1.x86_64.qcow2
+#   when: distro == "CentOS9"
+  
+#   my_var: "{{ 'foo' if my_condition else '' }}"
+
+# - name: Download a QCOW2 image if not exists
+#   ansible.builtin.get_url:
+#     url: https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20221129.1.x86_64.qcow2
+#     dest: "{{ QCOW2_image_dir }}"/{{ CentOS9_image_name }}
+#     checksum: "{{ CentOS9_image_checksum }}"
+#   when: 
+
+# - name: Create VM if not exists
+#   block:
+#   - name: Copy base image to libvirt directory
+#     copy:
+#       dest: "{{ libvirt_pool_dir }}/{{ vm_name }}.qcow2"
+#       src: "/tmp/{{ base_image_name }}"
+#       force: no
+#       remote_src: yes 
+#       mode: 0660
+#     register: copy_results
+
+#   - name: Configure the image
+#     command: |
+#       virt-customize -a {{ libvirt_pool_dir }}/{{ vm_name }}.qcow2 \
+#       --hostname {{ vm_name }} \
+#       --root-password password:{{ vm_root_pass }} \
+#       --ssh-inject 'root:file:{{ ssh_key }}' \
+#       --uninstall cloud-init --selinux-relabel
+#     when: copy_results is changed
+
+#   - name: Define vm
+#     community.libvirt.virt:
+#       command: define
+#       xml: "{{ lookup('template', 'vm-template.xml.j2') }}"
+#     when: "vm_name not in existing_vms.list_vms"
+
+# - name: Ensure VM is started
+#   community.libvirt.virt:
+#     name: "{{ vm_name }}"
+#     state: running
+#   register: vm_start_results
+#   until: "vm_start_results is success"
+#   retries: 15
+#   delay: 2
+
+# - name: Ensure temporary file is deleted
+#   file:
+#     path: "/tmp/{{ base_image_name }}"
+#     state: absent
+#   when: cleanup_tmp | bool
