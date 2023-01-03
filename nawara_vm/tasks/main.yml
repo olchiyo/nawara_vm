@@ -11,31 +11,26 @@
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
   register: centos9_image
-  when: distro == "CentOS9"
 
 - name: Check if CentOS8 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
   register: centos8_image
-  when: distro == "CentOS8"
 
 - name: Check if Ubuntu 20.04 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
   register: ubuntu2004_image
-  when: distro == "Ubuntu2004"
 
 - name: Check if RHEL8 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
   register: rhel8_image
-  when: distro == "RHEL8"
 
 - name: Check if RHEL9 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
   register: rhel9_image
-  when: distro == "RHEL9"
 
 - name: Print check status of CentOS9
   ansible.builtin.debug:
