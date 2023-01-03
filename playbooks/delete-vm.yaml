@@ -1,0 +1,49 @@
+- hosts: "{{ target_host }}"
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Get VMs list
+      community.libvirt.virt:
+        command: list_vms
+      register: existing_vms
+      changed_when: no
+
+    - name: Show Current VM List
+      ansible.builtin.debug:
+        var: existing_vms
+    - name: Create VM if not exists
+      block:
+      - name: Ensure VM is forced to shutdown
+        community.libvirt.virt:
+          name: "{{ vm_name }}"
+          state: destroyed
+        register: vm_destroyed_results
+        until: "vm_destroyed_results is success"
+        retries: 5
+        delay: 15
+      - name: Delete VM
+        community.libvirt.virt:
+          command: undefine
+          name: "{{ vm_name }}"
+      - name: Delete QCOW2 File
+        ansible.builtin.file:
+          path: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+          state: absent
+      - name: Delete cloud-init ISO File
+        ansible.builtin.file:
+          path: "{{ QCOW2_image_dir }}/{{ vm_name }}.iso"
+          state: absent
+      - name: Delete cloud-init directory
+        ansible.builtin.file:
+          path: "{{ cloud_init_dir }}/{{ vm_name }}"
+          state: absent
+      when: "vm_name in existing_vms.list_vms"
+    post_tasks:
+      - name: Refresh VMs list
+        community.libvirt.virt:
+          command: list_vms
+        register: existing_vms
+        changed_when: no
+      - name: Make sure the VM is not in the list
+        ansible.builtin.debug:
+          msg: "{{ vm_name in existing_vms.list_vms | bool }}" 
