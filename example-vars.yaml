@@ -70,3 +70,8 @@ vm_vcpus: 2
 ## False인 경우, 기존에 발견된 QCOW2 파일을 삭제하지 않고 재활용 한다. 기존 데이터를 유지하고 싶다면 false로 설정한다.
 ## ex) recreate_QCOW2_file: true
 recreate_QCOW2_file: true
+
+## distro: 가상머신에서 사용할 OS의 종류를 고른다. 2023년 1월 현재 nawara_vm에서 지원하는 운영체제는 CentOS9가 전부이며
+## Ubuntu 20.04를 지원하도록 빠르게 기능을 추가 할 에정이다.
+## ex) distro: CentOS9
+distro: CentOS9
