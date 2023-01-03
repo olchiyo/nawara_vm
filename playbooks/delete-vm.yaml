@@ -37,13 +37,14 @@
         ansible.builtin.file:
           path: "{{ cloud_init_dir }}/{{ vm_name }}"
           state: absent
-      when: "vm_name in existing_vms.list_vms"
-    post_tasks:
-      - name: Refresh VMs list
-        community.libvirt.virt:
-          command: list_vms
-        register: existing_vms
-        changed_when: no
-      - name: Make sure the VM is not in the list
-        ansible.builtin.debug:
-          msg: "{{ vm_name in existing_vms.list_vms | bool }}" 
+      when: vm_name in existing_vms.list_vms
+  post_tasks:
+    - name: Refresh VMs list
+      community.libvirt.virt:
+        command: list_vms
+      register: existing_vms
+      changed_when: no
+    - name: Check if VM is not in the list
+      ansible.builtin.debug:
+        msg: "{{ vm_name }}은 더 이상 {{ target_host}} 에 존재하지 않습니다" 
+      when: not vm_name in existing_vms.list_vms
