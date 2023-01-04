@@ -10,67 +10,83 @@
 - name: Check if CentOS9 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
-  register: image_exists
-  when: distro == "CentOS9"
+  register: centos9_image
 
 - name: Check if CentOS8 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
-  register: image_exists
-  when: distro == "CentOS8"
+  register: centos8_image
 
 - name: Check if Ubuntu 20.04 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
-  register: image_exists
-  when: distro == "Ubuntu2004"
+  register: ubuntu2004_image
 
 - name: Check if RHEL8 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
-  register: image_exists
-  when: distro == "RHEL8"
+  register: rhel8_image
 
 - name: Check if RHEL9 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
-  register: image_exists
+  register: rhel9_image
+
+- name: Print check status of CentOS9
+  ansible.builtin.debug:
+    var: centos9_image
+  when: distro == "CentOS9"
+
+- name: Print check status of CentOS8
+  ansible.builtin.debug:
+    var: centos8_image
+  when: distro == "CentOS8"
+
+- name: Print check status of RHEL8
+  ansible.builtin.debug:
+    var: rhel8_image
+  when: distro == "RHEL8"
+
+- name: Print check status of RHEL9
+  ansible.builtin.debug:
+    var: rhel9_image
   when: distro == "RHEL9"
 
-- name: Print return information from the previous task
+- name: Print check status of Ubuntu 20.04
   ansible.builtin.debug:
-    var: image_exists
+    var: ubuntu2004_image
+  when: distro == "Ubuntu2004"
 
 - name: Download a CentOS9 QCOW2 image if not exists
   ansible.builtin.get_url:
     url: "{{ CentOS9_image_url }}"
     dest: "{{ QCOW2_image_dir }}/{{ CentOS9_image_name }}"
     checksum: "{{ CentOS9_image_checksum }}"
-  when: not image_exists['stat']['exists'] and distro == "CentOS9"
+  when: not centos9_image['stat']['exists'] and distro == "CentOS9"
 
 - name: Download a CentOS8 QCOW2 image if not exists
   ansible.builtin.get_url:
     url: "{{ CentOS8_image_url }}"
     dest: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
     checksum: "{{ CentOS8_image_checksum }}"
-  when: not image_exists['stat']['exists'] and distro == "CentOS8"
+  when: not centos8_image['stat']['exists'] and distro == "CentOS8"
 
 - name: Fail if RHEL8 Image does not exist
   ansible.builtin.fail:
     msg: "RHEL8 이미지는 공개적으로 다운로드가 불가능합니다. Red Hat 포털을 통해 이미지를 수동으로 다운 받아주세요"
-  when: not image_exists['stat']['exists'] and distro == "RHEL8"
+  when: not rhel8_image['stat']['exists'] and distro == "RHEL8"
 
 - name: Fail if RHEL9 Image does not exist
   ansible.builtin.fail:
     msg: "RHEL9 이미지는 공개적으로 다운로드가 불가능합니다. Red Hat 포털을 통해 이미지를 수동으로 다운 받아주세요"
-  when: not image_exists['stat']['exists'] and distro == "RHEL9"
+  when: not rhel9_image['stat']['exists'] and distro == "RHEL9"
 
 - name: Download a Ubuntu 20.04 QCOW2 image if not exists
   ansible.builtin.get_url:
     url: "{{ Ubuntu2004_image_url }}"
     dest: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
     checksum: "{{ Ubuntu2004_image_checksum }}"
-  when: not image_exists['stat']['exists'] and distro == "Ubuntu2004"
+  when: not ubuntu2004_image['stat']['exists'] and distro == "Ubuntu2004"
 
 - name: Get VMs list
   community.libvirt.virt:
@@ -159,25 +175,25 @@
     when: distro == "CentOS8" and recreate_QCOW2_file
   
   - name: Create base QCOW2 file (RHEL8)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "RHEL8" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ RHEL8_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "RHEL8" and recreate_QCOW2_file
 
   - name: Create base QCOW2 file (RHEL9)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "RHEL9" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ RHEL9_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "RHEL9" and recreate_QCOW2_file
 
   - name: Create base QCOW2 file (Ubuntu20.04)
-  ansible.builtin.copy:
-    src: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
-    dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
-    remote_src: yes
-  when: distro == "Ubuntu2004" and recreate_QCOW2_file
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "Ubuntu2004" and recreate_QCOW2_file
 
   - name: Resize base QCOW2 file
     ansible.builtin.command: "qemu-img resize {{ QCOW2_image_dir }}/{{ vm_name }}.qcow2 {{ os_disk_size }}"
