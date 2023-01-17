@@ -24,3 +24,4 @@ cloud_init_dir: "/root/cloud-init-files"
 network_br_name: br-v210
 recreate_QCOW2_file: true
 os_disk_size: 100G
+network_type: "linuxbridge"
