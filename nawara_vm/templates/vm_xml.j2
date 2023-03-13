@@ -27,11 +27,20 @@
       <target dev='vda' bus='virtio'/>
       <alias name='virtio-disk0'/>
     </disk>
+{% if network_type == "linuxbridge" %}
     <interface type='bridge'>
       <mac address='{{ mac_address01 }}'/>
       <source bridge='{{ network_br_name }}'/>
       <model type='virtio'/>
     </interface>
+{% elif network_type == "openvswitch" %}
+    <interface type='bridge'>
+      <mac address='{{ mac_address01 }}'/>
+      <source bridge='{{ network_br_name }}'/>
+      <virtualport type='openvswitch'/>
+      <model type='virtio'/>
+    </interface>
+{% endif %}
     <serial type='pty'>
       <source path='/dev/pts/3'/>
       <target type='isa-serial' port='0'>

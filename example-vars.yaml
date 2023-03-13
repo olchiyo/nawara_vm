@@ -48,6 +48,16 @@ gateway: 192.168.210.1
 
 network_br_name: br-v210
 
+## network_type: bridge의 종류를 표기한다.
+## 대중적으로 Libvirt에서 주로 사용되는 네트워크 Bridge는 정해져 있다.
+## 아래 두 개 중에서 하나를 명시한다.
+## 어떤 타입인지 정확히 잘 모르겠다면 linuxbridge 라고 명시해주면 된다.
+## - linuxbridge
+## - openvswitch
+
+network_type: linuxbridge
+
+
 ## os_disk_size: 가상머신의 OS 영역으로 사용할 디스크의 크기를 정한다.
 ## JAR1333 환경에서는 어차피 실습용이니 40G, 50G 수준으로 할당해도 된다.
 ## ex) os_disk_size: 50G
