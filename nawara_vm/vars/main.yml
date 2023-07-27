@@ -16,6 +16,10 @@ RHEL8_image_checksum: "sha256:9b5718977832213cf07dc17a9ba3ad171b21576840064ecf2c
 RHEL9_image_name: "rhel-baseos-9.1-x86_64-kvm.qcow2"
 RHEL9_image_checksum: "sha256:71020b8e86246b6626fcc4d5a13ddd9fffdb031446c07c903591764c61a3be70"
 
+Rocky8_image_url: "http://dl.rockylinux.org/vault/rocky/8.7/images/x86_64/Rocky-8-GenericCloud-Base-8.7-20230215.0.x86_64.qcow2"
+Rocky8_image_checksum: "sha256:f242e06b76124b8ea3495fc6d69eb6e89e0a1826e3d9bdabed0ef4e68880eb5a"
+Rocky8_image_name: "Rocky-8-GenericCloud-Base-8.7-20230215.0.x86_64.qcow2"
+
 
 vm_name: default-vm{{ 100 | random }}
 vm_ram_mb: 4096
