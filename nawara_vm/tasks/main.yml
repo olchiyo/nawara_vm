@@ -17,6 +17,11 @@
     path: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
   register: centos8_image
 
+  - name: Check if Rocky8 QCOW2 image exists
+  ansible.builtin.stat:
+    path: "{{ QCOW2_image_dir }}/{{ Rocky8_image_name }}"
+  register: rocky8_image
+
 - name: Check if Ubuntu 20.04 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ Ubuntu2004_image_name }}"
@@ -41,6 +46,11 @@
   ansible.builtin.debug:
     var: centos8_image
   when: distro == "CentOS8"
+
+  - name: Print check status of Rocky8
+  ansible.builtin.debug:
+    var: rocky8_image
+  when: distro == "Rocky8"
 
 - name: Print check status of RHEL8
   ansible.builtin.debug:
@@ -70,6 +80,13 @@
     dest: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
     checksum: "{{ CentOS8_image_checksum }}"
   when: not centos8_image['stat']['exists'] and distro == "CentOS8"
+
+- name: Download a Rocky8 QCOW2 image if not exists
+  ansible.builtin.get_url:
+    url: "{{ Rocky8_image_url }}"
+    dest: "{{ QCOW2_image_dir }}/{{ Rocky8_image_name }}"
+    checksum: "{{ Rocky8_image_checksum }}"
+  when: not rocky8_image['stat']['exists'] and distro == "Rocky8"
 
 - name: Fail if RHEL8 Image does not exist
   ansible.builtin.fail:
@@ -173,6 +190,13 @@
       dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
       remote_src: yes
     when: distro == "CentOS8" and recreate_QCOW2_file
+
+   - name: Create base QCOW2 file (Rocky8)
+    ansible.builtin.copy:
+      src: "{{ QCOW2_image_dir }}/{{ Rocky8_image_name }}"
+      dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
+      remote_src: yes
+    when: distro == "Rocky8" and recreate_QCOW2_file
   
   - name: Create base QCOW2 file (RHEL8)
     ansible.builtin.copy:
