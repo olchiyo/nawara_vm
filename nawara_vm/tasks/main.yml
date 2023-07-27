@@ -47,7 +47,7 @@
     var: centos8_image
   when: distro == "CentOS8"
 
-  - name: Print check status of Rocky8
+- name: Print check status of Rocky8
   ansible.builtin.debug:
     var: rocky8_image
   when: distro == "Rocky8"
