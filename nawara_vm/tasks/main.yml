@@ -17,7 +17,7 @@
     path: "{{ QCOW2_image_dir }}/{{ CentOS8_image_name }}"
   register: centos8_image
 
-  - name: Check if Rocky8 QCOW2 image exists
+- name: Check if Rocky8 QCOW2 image exists
   ansible.builtin.stat:
     path: "{{ QCOW2_image_dir }}/{{ Rocky8_image_name }}"
   register: rocky8_image
