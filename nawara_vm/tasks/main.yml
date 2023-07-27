@@ -191,7 +191,7 @@
       remote_src: yes
     when: distro == "CentOS8" and recreate_QCOW2_file
 
-   - name: Create base QCOW2 file (Rocky8)
+  - name: Create base QCOW2 file (Rocky8)
     ansible.builtin.copy:
       src: "{{ QCOW2_image_dir }}/{{ Rocky8_image_name }}"
       dest: "{{ QCOW2_image_dir }}/{{ vm_name }}.qcow2"
