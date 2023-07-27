@@ -141,7 +141,7 @@
     ansible.builtin.template:
       src: user-data-centos.j2
       dest: "{{ cloud_init_dir }}/{{ vm_name }}/user-data"
-    when: distro == "CentOS9" or distro == "CentOS8" or distro == "RHEL8" or distro == "RHEL9"
+    when: distro == "CentOS9" or distro == "CentOS8" or distro == "RHEL8" or distro == "RHEL9" or distro == "Rocky8"
 
   - name: Render user-data file (RHEL)
     ansible.builtin.template:
